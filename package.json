@@ -1,0 +1,52 @@
+{
+  "name": "s3-desktop",
+  "description": "s3-desktop-app",
+  "version": "0.0.1",
+  "private": true,
+  "author": {
+    "name": "icymonk",
+    "email": "icemonk1202@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/icymonk/s3-desktop.git"
+  },
+  "main": "dist-electron/main.js",
+  "scripts": {
+    "build": "nuxi build --prerender",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
+  },
+  "devDependencies": {
+    "@nuxt/devtools": "latest",
+    "@types/bytes": "^3.1.4",
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1",
+    "naive-ui": "^2.35.0",
+    "nuxt": "^3.8.2",
+    "nuxt-electron": "^0.7.0",
+    "vite-plugin-electron": "^0.15.5",
+    "vite-plugin-electron-renderer": "^0.14.5",
+    "vue": "^3.3.11",
+    "vue-router": "^4.2.5"
+  },
+  "dependencies": {
+    "@aws-sdk/client-cloudfront": "^3.472.0",
+    "@aws-sdk/client-s3": "^3.472.0",
+    "@pinia-plugin-persistedstate/nuxt": "^1.2.0",
+    "@pinia/nuxt": "^0.5.1",
+    "@vicons/ionicons5": "^0.12.0",
+    "@vueuse/core": "^10.7.0",
+    "bytes": "^3.1.2",
+    "electron-log": "^5.0.1",
+    "electron-store": "^8.1.0",
+    "electron-updater": "^6.1.7",
+    "lodash": "^4.17.21",
+    "sass": "^1.69.5",
+    "vite-plugin-node-polyfills": "^0.16.0"
+  }
+}

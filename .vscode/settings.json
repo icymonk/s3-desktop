@@ -1,0 +1,88 @@
+{
+  "[vue]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit"
+  },
+  "todohighlight.isEnable": true,
+  "todohighlight.isCaseSensitive": true,
+  "todohighlight.keywords": [
+    {
+      "text": "TODO:",
+      "color": "white",
+      "backgroundColor": "#0D698B",
+      "isWholeLine": true
+    },
+    {
+      "text": "DONE:",
+      "color": "gray",
+      "backgroundColor": "transparent",
+      "textDecoration": "line-through",
+      "isWholeLine": true
+    },
+    {
+      "text": "MUST:",
+      "color": "white",
+      "backgroundColor": "#E34234",
+      "isWholeLine": true
+    },
+    {
+      "text": "NOTE:",
+      "color": "#333652",
+      "backgroundColor": "#FAD02C",
+      "isWholeLine": true
+    },
+    {
+      "text": "READ:",
+      "color": "#E9EAEC",
+      "backgroundColor": "#90ADC6",
+      "isWholeLine": true
+    },
+    {
+      "text": "ENHANCE:",
+      "color": "#E9EAEC",
+      "backgroundColor": "#05b55a",
+      "isWholeLine": true
+    }
+  ],
+  // "todohighlight.keywordsPattern": "TODO:|FIXME:|\\(([^)]+)\\)", //highlight `TODO:`,`FIXME:` or content between parentheses
+  "todohighlight.defaultStyle": {
+    // "backgroundColor": "#ffab00",
+    "overviewRulerColor": "#ffab00",
+    "cursor": "pointer"
+    // "isWholeLine": true
+    // "border": "1px solid #eee",
+    // "borderRadius": "2px"
+    //other styling properties goes here ...
+  },
+  "todohighlight.include": [
+    "**/*.js",
+    "**/*.jsx",
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.html",
+    "**/*.php",
+    "**/*.css",
+    "**/*.scss"
+  ],
+  "todohighlight.exclude": [
+    "**/node_modules/**",
+    "**/bower_components/**",
+    "**/dist/**",
+    "**/build/**",
+    "**/.vscode/**",
+    "**/.github/**",
+    "**/_output/**",
+    "**/*.min.*",
+    "**/*.map",
+    "**/.next/**"
+  ],
+  "todohighlight.maxFilesForSearch": 5120,
+  "todohighlight.toggleURI": false,
+  "typescript.tsdk": "node_modules/typescript/lib"
+}

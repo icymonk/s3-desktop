@@ -1,0 +1,13 @@
+{
+  "recommendations": [
+    "vue.volar",
+    "vue.vscode-typescript-vue-plugin",
+    "esbenp.prettier-vscode",
+    "eamodio.gitlens",
+    "pkief.material-icon-theme",
+    "wayou.vscode-todo-highlight",
+    "styled-components.vscode-styled-components",
+    "misterj.vue-volar-extention-pack",
+    "dbaeumer.vscode-eslint"
+  ]
+}

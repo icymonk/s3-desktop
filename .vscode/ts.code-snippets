@@ -1,0 +1,49 @@
+{
+  "Function": {
+    "prefix": "ff",
+    "body": ["function $1($2) {", "console.log('$1')", "$4", "}", ""],
+    "description": "Function"
+    // "scope": "typescript"
+  },
+  "Async Function": {
+    "prefix": "aff",
+    "body": [
+      "async function $1 ($2: $3) {",
+      "console.log('$1')",
+      "$4",
+      "}",
+      ""
+    ],
+    "description": "Function"
+    // "scope": "typescript"
+  },
+  "Log": {
+    "prefix": "lg",
+    "body": ["console.log('$1')", ""],
+    "description": "Log"
+    // "scope": "typescript"
+  },
+  "Log with value": {
+    "prefix": "lv",
+    "body": ["console.log('$1', $1)", ""],
+    "description": "Log"
+    // "scope": "typescript"
+  },
+  "Docker item config": {
+    "prefix": "dc",
+    "body": [
+      "[OBJECT.$1]: {",
+      "  type: '${4:default}',",
+      "  defaultLocation: '${5:center}',",
+      "  id: OBJECT.$1,",
+      "  title: '$2',",
+      "  component: DOCKER_TEMPLATE.${3:TOOLBAR_LIST},",
+      "  props: {},",
+      "  events: [",
+      "    { type: EVENT_TYPE.COMMON['init'], actions: [] }",
+      "  ],",
+      "  actions: [...defaultActions],",
+      "},"
+    ]
+  }
+}
