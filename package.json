@@ -19,8 +19,8 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "pack": "electron-builder --dir",
-    "dist": "electron-builder -m --x64",
-    "deploy": "electron-builder -m --x64 -p always"
+    "dist": "electron-builder -m",
+    "deploy": "electron-builder -m -p always"
   },
   "devDependencies": {
     "@nuxt/devtools": "latest",
