@@ -1,13 +1,15 @@
 <template>
-  <NMessageProvider>
-    <NuxtLayout>
-      <NuxtPage></NuxtPage>
-    </NuxtLayout>
-  </NMessageProvider>
+  <NDialogProvider>
+    <NMessageProvider>
+      <NuxtLayout>
+        <NuxtPage></NuxtPage>
+      </NuxtLayout>
+    </NMessageProvider>
+  </NDialogProvider>
 </template>
 
 <script lang="ts" setup>
-import { NMessageProvider } from 'naive-ui'
+import { NDialogProvider, NMessageProvider } from 'naive-ui'
 import { useAuthStore } from './store/auth'
 import { useS3Store } from './store/s3'
 
@@ -17,7 +19,7 @@ const s3$ = useS3Store()
 await auth$.loadWorkspace()
 // await auth$.saveWorkspace()
 
-s3$.initWorkspace(auth$.currentWorkspace)
+await s3$.initWorkspace(auth$.currentWorkspace)
 const pinia = usePinia()
 
 watch(

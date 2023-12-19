@@ -1,13 +1,13 @@
 <template>
   <NSpace class="app-header" justify="space-between" align="center">
     <NSpace>
-      <NButton text circle @click="onClickMenu">
+      <!-- <NButton text circle @click="onClickMenu">
         <template #icon>
           <NIcon>
-            <MenuOutline></MenuOutline>
+            <ArrowBackOutline></ArrowBackOutline>
           </NIcon>
         </template>
-      </NButton>
+      </NButton> -->
 
       <NBreadcrumb>
         <NBreadcrumbItem @click="onClickHome">
@@ -51,7 +51,7 @@
 </template>
 
 <script lang="ts" setup>
-import { MenuOutline, SettingsOutline } from '@vicons/ionicons5'
+import { MenuOutline, ArrowBack, SettingsOutline } from '@vicons/ionicons5'
 import {
   NButton,
   NSpace,
@@ -98,6 +98,7 @@ function onSelectWorkspace(workspace: any) {
   console.log('onSelectWorkspace!', workspace)
 
   auth$.currentKey = workspace
+  navigateTo(`/b`)
 }
 
 function onClickBreadcrumb(item: any, index: number) {

@@ -74,7 +74,7 @@ ipcMain.on('restart_app', () => {
 })
 
 /* Updater ======================================================*/
-autoUpdater.requestHeaders = { 'PRIVATE-TOKEN': 'Personal access Token' }
+autoUpdater.requestHeaders = { 'PRIVATE-TOKEN': '$GH_TOKEN' }
 autoUpdater.autoDownload = true
 
 autoUpdater.setFeedURL({

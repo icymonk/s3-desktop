@@ -31,8 +31,9 @@ export const useAuthStore = defineStore(
     function loadWorkspace() {
       workspaces.value = (store.get('workspaces') as Workspace[]) || []
     }
-    function saveWorkspace() {
-      store.set('workspaces', workspaces.value)
+    function saveWorkspace(items = workspaces.value || []) {
+      workspaces.value = items
+      store.set('workspaces', items)
     }
 
     function addWorkspace(workspace: Workspace) {

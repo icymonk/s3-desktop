@@ -114,6 +114,8 @@ function onClickCopy(input: string = '') {
 
 function onClickDeleteRow(item: any) {
   console.log('onClickDeleteRow', item)
+  const index = data.value.findIndex((_item) => _item.name === item.name)
+  data.value.splice(index, 1)
 }
 
 function onClickCancel() {
@@ -121,8 +123,7 @@ function onClickCancel() {
 }
 
 function onClickSave() {
-  auth$.workspaces = data.value
-  auth$.saveWorkspace()
+  auth$.saveWorkspace(data.value)
   emit('close')
   message.success('저장되었습니다.')
 }

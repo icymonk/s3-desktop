@@ -5,6 +5,9 @@
       :width="200"
       collapse-mode="width"
       bordered
+      show-trigger
+      @expand="sideCollapsed = false"
+      @collapse="sideCollapsed = true"
     >
       <AppSidebar
         @click:add="onClickAddWorkspace"

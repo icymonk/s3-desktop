@@ -7,6 +7,10 @@ import {
   type ListObjectsV2CommandInput,
   GetObjectCommand,
   type GetObjectCommandInput,
+  type DeleteObjectCommandInput,
+  DeleteObjectCommand,
+  type PutObjectCommandInput,
+  PutObjectCommand,
 } from '@aws-sdk/client-s3'
 import {
   CloudFrontClient,
@@ -81,6 +85,20 @@ export async function getListObjects(
   }
 }
 
+export async function putObject(
+  s3Client: S3Client,
+  input: PutObjectCommandInput,
+) {
+  const command = new PutObjectCommand(input)
+
+  try {
+    const response = await s3Client.send(command)
+    return response
+  } catch (err) {
+    console.error(err)
+  }
+}
+
 export async function getObject(
   s3Client: S3Client,
   input: GetObjectCommandInput,
@@ -89,7 +107,6 @@ export async function getObject(
 
   try {
     const response = await s3Client.send(command)
-    // The Body object also has 'transformToByteArray' and 'transformToWebStream' methods.
     const byteArray = await response.Body!.transformToByteArray()
     const blob = new Blob([byteArray], { type: 'application/octet-stream' })
 
@@ -106,140 +123,16 @@ export async function getObject(
   }
 }
 
-//   // 인스턴스 초기화
-//   const s3Client = new S3({
-//     apiVersion: "2015-04-13",
-//     region: "ap-northeast-2",
-//     credentials: {
-//       accessKeyId: accKey,
-//       secretAccessKey: secretKey,
-//     },
-//   })
+export async function deleteObject(
+  s3Client: S3Client,
+  input: DeleteObjectCommandInput,
+) {
+  const command = new DeleteObjectCommand(input)
 
-//   const cfClient = new CloudFrontClient({
-//     apiVersion: "2020-05-31",
-//     region: "ap-northeast-2",
-//     credentials: {
-//       accessKeyId: accKey,
-//       secretAccessKey: secretKey,
-//     },
-//   })
-
-//   const bucketNameCD =
-//     env === 'prod'
-//       ? `extension.calsplatz.com`
-//       : `${env}.extension.calsplatz.com`
-
-//   const originDomain =
-//     env === 'prod'
-//       ? `${appCode}.calsplatz.com`
-//       : `${env}.${appCode}.calsplatz.com`
-
-//   const timeStamp = `${new Date(+new Date() + 3240 * 10000)
-//     .toISOString()
-//     .replace('T', ' ')
-//     .replace(/\..*/, '')
-//     .replace(' ', '')
-//     .replace(/-/g, '')
-//     .replace(/:/g, '')}`
-//   let distributionId = ''
-
-//   // 파일업로드
-//   await recursiveUpload(
-//     s3Client,
-//     distPath,
-//     `extension/${appCode}`,
-//     slash(bucketNameCD),
-//   )
-
-//   // 무효화
-//   const listDisCmd = new ListDistributionsCommand({})
-//   const listDisCmdResult = await cfClient.send(listDisCmd)
-
-//   if (listDisCmdResult.DistributionList?.Items?.length) {
-//     for (let i = 0; i < listDisCmdResult.DistributionList.Items.length; i++) {
-//       const disItem = listDisCmdResult.DistributionList.Items[i]
-//       const domain = disItem.Aliases?.Items?.[0]
-
-//       if (domain === originDomain) {
-//         distributionId = disItem.Id || ''
-//         break
-//       }
-//     }
-//   }
-//   console.log(`Start CreateInvalidation: ${distributionId}`)
-
-//   if (distributionId.length > 0) {
-//     const invalidateCmd = new CreateInvalidationCommand({
-//       DistributionId: distributionId,
-//       InvalidationBatch: {
-//         CallerReference: timeStamp,
-//         Paths: {
-//           Quantity: 1,
-//           Items: [`/extension/${appCode}/*`],
-//         },
-//       },
-//     })
-
-//     const invalidateCmdResult = await cfClient.send(invalidateCmd)
-
-//     console.log(`WaitFor waitUntilInvalidationCompleted: ${distributionId}`)
-//     const wairfor = await waitUntilInvalidationCompleted(
-//       {
-//         client: cfClient,
-//         maxWaitTime: 300,
-//       },
-//       {
-//         Id: invalidateCmdResult.Invalidation?.Id,
-//         DistributionId: distributionId,
-//       },
-//     )
-
-//     console.log(`Finish CreateInvalidation: ${wairfor.state}`)
-//   } else {
-//     console.error(`DistributionId Empty`)
-//   }
-//   console.info('Finish')
-// }
-
-// async function recursiveUpload(client, dirPath, targetFolderPath, bucketName) {
-//   const files = fs.readdirSync(dirPath)
-
-//   for (const fileName of files) {
-//     const filePath = path.join(dirPath, fileName)
-
-//     const stat = await fs.statSync(filePath)
-//     if (stat.isFile()) {
-//       // upload file
-//       const readBuffer = await fs.readFileSync(filePath)
-//       console.log(
-//         `Upload : ${filePath} => ${slash(
-//           path.join(targetFolderPath, fileName),
-//         )}`,
-//       )
-//       const param = {
-//         Bucket: bucketName,
-//         Key: slash(path.join(targetFolderPath, fileName)),
-//         Body: readBuffer,
-//         // ACL: 'public-read',
-//         ContentType: mime.lookup(filePath).toString(),
-//       }
-
-//       await client.send(new PutObjectCommand(param)).catch((e) => {
-//         if (e) {
-//           console.error(e)
-//         }
-//         return false
-//       })
-//     } else if (stat.isDirectory()) {
-//       await recursiveUpload(
-//         client,
-//         filePath,
-//         path.join(targetFolderPath, fileName),
-//         bucketName,
-//       )
-//     }
-//   }
-
-//   return true
-// }
+  try {
+    const response = await s3Client.send(command)
+    return response
+  } catch (err) {
+    console.error(err)
+  }
+}

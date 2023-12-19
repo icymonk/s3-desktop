@@ -1,5 +1,5 @@
 import { S3Client, type ListObjectsV2CommandInput } from '@aws-sdk/client-s3'
-import { getListObjects } from '~/utils/s3'
+import { deleteObject, getListObjects, putObject } from '~/utils/s3'
 import { useAuthStore, type Workspace } from './auth'
 
 export type Bucket = {
@@ -22,10 +22,15 @@ export const useS3Store = defineStore(
       useRoute().path.startsWith('/b') ? useRoute().path.split('/')[2] : null,
     )
 
-    watch(() => auth$.currentWorkspace, initWorkspace)
+    watch(() => auth$.currentWorkspace, initWorkspace, { flush: 'sync' })
 
     async function initWorkspace(workspace?: Workspace) {
-      if (!workspace) return
+      if (!workspace) {
+        s3Client.value = undefined
+        buckets.value = []
+
+        return
+      }
 
       loading.value = true
 
@@ -50,14 +55,30 @@ export const useS3Store = defineStore(
     //   })
     // }
 
-    async function getObjects(input: Partial<ListObjectsV2CommandInput> = {}) {
+    async function getFiles(prefix: string) {
       if (!s3Client.value) return []
 
       return getListObjects(s3Client.value, {
-        ...input,
+        Prefix: prefix,
         Bucket: useRoute().path.split('/')[2],
         Delimiter: '/',
       })
+    }
+
+    async function uploadFiles(files: File[], prefix = '') {
+      if (!s3Client.value) return false
+      if (!currentBucket.value) return
+      console.log('uploadFiles', files)
+
+      const uploadFiles = files.map(async (item) =>
+        putObject(s3Client.value!, {
+          Body: await item.text(),
+          Key: `${prefix}/${item.name}`,
+          Bucket: currentBucket.value!,
+        }),
+      )
+
+      return Promise.all(uploadFiles)
     }
 
     async function downloadFile(key: string) {
@@ -67,15 +88,27 @@ export const useS3Store = defineStore(
       getObject(s3Client.value, { Bucket: currentBucket.value, Key: key })
     }
 
+    async function deleteFile(key: string) {
+      if (!s3Client.value) return false
+      if (!currentBucket.value) return
+
+      return deleteObject(s3Client.value, {
+        Bucket: currentBucket.value,
+        Key: key,
+      })
+    }
+
     return {
       loading,
       buckets,
       s3Client,
-      getObjects,
+      getFiles,
       getBuckets,
       currentBucket,
       initWorkspace,
+      uploadFiles,
       downloadFile,
+      deleteFile,
     }
   },
   {
