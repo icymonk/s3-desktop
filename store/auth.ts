@@ -1,5 +1,3 @@
-import Store from 'electron-store'
-
 export type Workspace = {
   name: string
   icon: string
@@ -12,8 +10,7 @@ export type Workspace = {
 export const useAuthStore = defineStore(
   'auth',
   () => {
-    const store = new Store()
-    const workspaces = ref<Workspace[]>([])
+    const workspaces = useElectronStorage<Workspace[]>('workspaces', [])
 
     const currentKey = ref('')
 
@@ -28,22 +25,12 @@ export const useAuthStore = defineStore(
       () => currentWorkspace.value?.s3Config.credentials?.secretAccessKey,
     )
 
-    function loadWorkspace() {
-      workspaces.value = (store.get('workspaces') as Workspace[]) || []
-    }
-    function saveWorkspace(items = workspaces.value || []) {
-      workspaces.value = items
-      store.set('workspaces', items)
-    }
-
     function addWorkspace(workspace: Workspace) {
       workspaces.value.push(workspace)
-      saveWorkspace()
     }
 
     function delWorkspace(index: number) {
       workspaces.value.splice(index, 1)
-      saveWorkspace()
     }
 
     return {
@@ -54,8 +41,6 @@ export const useAuthStore = defineStore(
       currentAccessKey,
       addWorkspace,
       delWorkspace,
-      loadWorkspace,
-      saveWorkspace,
     }
   },
   {

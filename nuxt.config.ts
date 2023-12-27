@@ -10,23 +10,25 @@ export default defineNuxtConfig({
     },
   },
 
+  router: {
+    options: {
+      hashMode: true,
+    },
+  },
+
   modules: [
     'nuxt-electron',
     '@pinia/nuxt',
     '@pinia-plugin-persistedstate/nuxt',
+    '@nuxtjs/i18n',
   ],
 
   electron: {
     build: [
-      {
-        // Main-Process entry file of the Electron App.
-        entry: 'electron/main.ts',
-      },
+      { entry: 'electron/main.ts' },
       {
         entry: 'electron/preload.ts',
         onstart(args) {
-          // Notify the Renderer-Process to reload the page when the Preload-Scripts build is complete,
-          // instead of restarting the entire Electron App.
           args.reload()
         },
       },
@@ -34,25 +36,10 @@ export default defineNuxtConfig({
     renderer: {},
   },
 
-  router: {
-    options: {
-      hashMode: true,
-    },
+  i18n: {
+    /* module options */
+    defaultLocale: 'en',
+    vueI18n: './i18n.config.ts',
+    locales: ['en', 'ko'],
   },
-
-  // vite: {
-  // plugins: [nodePolyfills()],
-  // vue: {
-  //   script: {
-  //     fs: {
-  //       fileExists(file: string) {
-  //         return existsSync(file)
-  //       },
-  //       readFile(file: string) {
-  //         return readFileSync(file, 'utf-8')
-  //       },
-  //     },
-  //   },
-  // },
-  // },
 })

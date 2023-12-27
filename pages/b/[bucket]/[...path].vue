@@ -1,19 +1,55 @@
 <template>
   <div ref="wrapperRef" class="wrapper">
     <div v-if="isOverDropZone" class="dropzone">
-      <div>파일을 올려놓으세요</div>
+      <div>{{ $t('dropzone.message') }}</div>
     </div>
 
-    <DevOnly>
-      <div>prefix: {{ prefix }}</div>
-      <div>$route.path: {{ $route.path }}</div>
-      <div>$route.params: {{ $route.params }}</div>
-    </DevOnly>
+    <NSpace justify="space-between" align="center" class="table-header">
+      <NSpace>
+        <NInput
+          v-model:value="searchInput"
+          :placeholder="$t('search')"
+        ></NInput>
+      </NSpace>
+
+      <NSpace>
+        <NButton @click="onClickRefresh">
+          <template #icon>
+            <NIcon>
+              <Refresh></Refresh>
+            </NIcon>
+          </template>
+        </NButton>
+
+        <NButton
+          :disabled="checkedRowKeys.length !== 1"
+          @click="onClickDownload"
+        >
+          <template #icon>
+            <NIcon>
+              <DownloadOutline></DownloadOutline>
+            </NIcon>
+          </template>
+
+          {{ $t('download') }}
+        </NButton>
+
+        <NButton @click="onClickCreateFolder">
+          {{ $t('createFolder.button') }}
+        </NButton>
+
+        <NButton :disabled="!checkedRowKeys.length" @click="onClickDelete">
+          {{ $t('delete') }}
+        </NButton>
+      </NSpace>
+    </NSpace>
 
     <NDataTable
       :loading="loading"
       :columns="columns"
       :data="filteredFiles"
+      :row-key="(row) => row.Key"
+      @update:checked-row-keys="onChangeCheckedRow"
     ></NDataTable>
   </div>
 </template>
@@ -21,15 +57,16 @@
 <script lang="ts" setup>
 import {
   NDataTable,
-  NDropdown,
   NButton,
   NIcon,
+  NInput,
+  NSpace,
   useDialog,
   useMessage,
 } from 'naive-ui'
 import bytes from 'bytes'
 import { useS3Store } from '~/store/s3'
-import { EllipsisVertical } from '@vicons/ionicons5'
+import { Refresh, DownloadOutline } from '@vicons/ionicons5'
 import { useDropZone } from '@vueuse/core'
 
 const route = useRoute()
@@ -38,6 +75,8 @@ const s3$ = useS3Store()
 
 const dialog = useDialog()
 const message = useMessage()
+const localePath = useLocalePath()
+const { t, d } = useI18n()
 
 const wrapperRef = ref()
 const { isOverDropZone } = useDropZone(wrapperRef, {
@@ -48,19 +87,13 @@ function onDrop(files: File[] | null, event: DragEvent) {
   if (!files) return
   console.log('onDrop', files, event)
 
-  const filenames = files.map((item) => `"${item.name}"`)
-
   dialog.success({
-    negativeText: '취소',
-    positiveText: '업로드',
+    negativeText: t('cancel'),
+    positiveText: t('upload'),
     content() {
       const fileListEl = files.map((item) => h('li', null, `"${item.name}"`))
       const ul = h('ul', null, fileListEl)
-      const descEl = h(
-        'span',
-        null,
-        `해당 파일${filenames.length > 1 ? '들' : ''}을 업로드하시겠습니까?`,
-      )
+      const descEl = h('span', null, t('uploadFile.contentMessage'))
 
       return h('div', null, [ul, descEl])
     },
@@ -68,9 +101,9 @@ function onDrop(files: File[] | null, event: DragEvent) {
       try {
         await s3$.uploadFiles(files, prefix.value)
         fetchFiles()
-        message.success(`업로드 완료`)
-      } catch (error) {
-        message.error(`업로드 실패`)
+        message.success(t('uploadFile.successMessage'))
+      } catch (error: any) {
+        message.error(`${error.name}: ${error.message}`)
       }
     },
   })
@@ -78,11 +111,15 @@ function onDrop(files: File[] | null, event: DragEvent) {
 
 const loading = ref(false)
 
-const columns = ref<any[]>([
+const columns = computed<any[]>(() => [
   {
-    title: 'Name',
+    type: 'selection',
+  },
+  {
+    title: t('name'),
     key: 'Name',
     sorter: 'default',
+    resizable: true,
     render(row: any) {
       return row.isDirectory
         ? h(
@@ -94,63 +131,23 @@ const columns = ref<any[]>([
     },
   },
   {
-    title: 'LastModified',
+    title: t('lastModified'),
     key: 'LastModified',
     sorter: 'default',
+    resizable: true,
     align: 'right',
     render(row: any) {
-      return row.LastModified?.toLocaleString() || '-'
+      return row.LastModified ? d(row.LastModified, 'long') : '-'
     },
   },
   {
-    title: 'Size',
+    title: t('size'),
     key: 'Size',
     sorter: 'default',
+    resizable: true,
     align: 'right',
     render(row: any) {
       return bytes(row.Size) || '-'
-    },
-  },
-  {
-    title: '',
-    key: 'Etc',
-    align: 'right',
-    render(row: any) {
-      return row.isNavigation
-        ? ''
-        : h(
-            NDropdown,
-            {
-              trigger: 'hover',
-              placement: 'bottom-end',
-              options: row.isDirectory
-                ? [
-                    {
-                      label: 'Delete',
-                      key: 'Delete',
-                    },
-                  ]
-                : [
-                    {
-                      label: 'Download',
-                      key: 'Download',
-                    },
-                    {
-                      label: 'Delete',
-                      key: 'Delete',
-                    },
-                  ],
-              onSelect: (value) => onSelectOption(row, value),
-            },
-            {
-              default: () =>
-                h(NButton, {
-                  text: true,
-                  renderIcon: () =>
-                    h(NIcon, {}, { default: () => h(EllipsisVertical) }),
-                }),
-            },
-          )
     },
   },
 ])
@@ -162,9 +159,15 @@ const prefix = computed(() =>
     : route.params.path,
 )
 
+const searchInput = ref('')
+
 const filteredFiles = computed(() => {
   const filtered = [
-    ...files.value.filter((item) => item.Key !== `${prefix.value}/`),
+    ...files.value
+      .filter(
+        (item) => !searchInput.value || item.Name.includes(searchInput.value),
+      )
+      .filter((item) => item.Key !== `${prefix.value}/`),
   ]
 
   if (prefix.value) {
@@ -179,28 +182,121 @@ const filteredFiles = computed(() => {
   return filtered
 })
 
-async function onSelectOption(row: any, value: any) {
-  console.log('onSelectOption:value', value)
+const checkedRowKeys = ref<string[]>([])
 
-  if (value === 'Download') {
-    s3$.downloadFile(row.Key)
-  } else if (value === 'Delete') {
-    dialog.error({
-      content: `"${row.Name}" 파일을 삭제하시겠습니까?`,
-      negativeText: '취소',
-      positiveText: '삭제하기',
-      async onPositiveClick() {
-        try {
-          await s3$.deleteFile(row.Key)
-          const index = files.value.findIndex((item) => item.Key === row.Key)
-          files.value.splice(index, 1)
-          message.success(`"${row.Name}" 파일이 삭제되었습니다.`)
-        } catch (error) {
-          message.error(`"${row.Name}" 파일이 삭제에 실패하였습니다.`)
-        }
-      },
-    })
+function onChangeCheckedRow(rowKeys: any[]) {
+  console.log('onChangeCheckedRow', rowKeys)
+  checkedRowKeys.value = rowKeys
+}
+
+function getFileByKey(key: string) {
+  console.log('getFileByKey')
+
+  return files.value.find((item) => item.Key == key)
+}
+
+const folderInput = ref('')
+
+function onClickCreateFolder() {
+  console.log('onClickCreateFolder')
+
+  folderInput.value = ''
+
+  const _dialog = dialog.success({
+    title: t('createFolder.title'),
+    negativeText: t('cancel'),
+    positiveText: t('create'),
+    content() {
+      const input = h(NInput, {
+        value: folderInput.value,
+        placeholder: t('createFolder.namePlaceholder'),
+        passivelyActivated: true,
+        onUpdateValue(value) {
+          folderInput.value = value
+        },
+        async onKeyup(e) {
+          console.log('onKeyup', e)
+          if (e.key !== 'Enter') return
+
+          await addFolder()
+          _dialog.destroy()
+        },
+        async onVnodeMounted() {
+          await nextTick()
+          input.el?.querySelector('input')?.focus()
+        },
+      })
+      return h('div', null, input)
+    },
+    onPositiveClick: addFolder,
+  })
+}
+
+async function addFolder() {
+  try {
+    await s3$.addFolder(`${prefix.value}/${folderInput.value}`)
+    fetchFiles()
+    message.success(t('createFolder.successMessage'))
+  } catch (error: any) {
+    message.error(`${error.name}: ${error.message}`)
   }
+}
+
+function onClickRefresh() {
+  console.log('onClickRefresh')
+  fetchFiles()
+}
+
+function onClickDelete() {
+  console.log('onClickDelete')
+
+  const files = checkedRowKeys.value.map(getFileByKey).filter(Boolean)
+  console.log('files', files)
+
+  const filenames = files.map((item) => `"${item.Name}"`)
+
+  dialog.error({
+    negativeText: t('cancel'),
+    positiveText: t('delete'),
+    content() {
+      const fileListEl = filenames.map((item) => h('li', null, item))
+      const ul = h('ul', null, fileListEl)
+      const descEl = h('span', null, t('deleteFile.contentMessage'))
+
+      return h('div', null, [ul, descEl])
+    },
+    async onPositiveClick() {
+      try {
+        const deleteFiles = files.map((item) =>
+          item.isDirectory ? deleteFolder(item.Key) : deleteFile(item.Key),
+        )
+        await Promise.all(deleteFiles)
+
+        message.success(t('deleteFile.successMessage'))
+      } catch (error: any) {
+        message.error(`${error.name}: ${error.message}`)
+      }
+    },
+  })
+}
+
+async function deleteFile(key: string) {
+  await s3$.deleteFile(key)
+  const index = files.value.findIndex((item) => item.Key === key)
+  files.value.splice(index, 1)
+}
+
+async function deleteFolder(key: string) {
+  await s3$.deleteFolder(key)
+  const index = files.value.findIndex((item) => item.Key === key)
+  files.value.splice(index, 1)
+}
+
+function onClickDownload() {
+  console.log('onClickDownload')
+  if (checkedRowKeys.value.length !== 1) return
+
+  s3$.downloadFile(checkedRowKeys.value[0])
 }
 
 function onClickDirectory(file: any) {
@@ -208,12 +304,12 @@ function onClickDirectory(file: any) {
     const _path = route.path.split('/')
     const path = _path.slice(0, route.path.split('/').length - 1).join('/')
 
-    navigateTo(path)
+    navigateTo(localePath(path))
 
     return
   }
 
-  navigateTo(`${route.path}/${file.Name.replace('/', '')}`)
+  navigateTo(localePath(`${route.path}/${file.Name.replace('/', '')}`))
 }
 
 async function fetchFiles() {
@@ -240,6 +336,12 @@ fetchFiles()
 .wrapper {
   position: relative;
   min-height: calc(100vh - 58px);
+
+  padding: 0 16px;
+}
+
+.table-header {
+  padding: 8px 0;
 }
 
 .dropzone {
@@ -254,7 +356,7 @@ fetchFiles()
   height: 100%;
 
   background-color: #aaaaaa66;
-  z-index: 1;
+  z-index: 10;
 
   font-size: 40px;
   color: #999;

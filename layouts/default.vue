@@ -17,7 +17,7 @@
 
     <NLayout>
       <NLayoutHeader>
-        <AppHeader :elRef="elRef" @click:menu="onClickMenu"></AppHeader>
+        <AppHeader :elRef="elRef"></AppHeader>
       </NLayoutHeader>
 
       <div ref="elRef"></div>
@@ -52,10 +52,6 @@ import EditWorkspace from '~/containers/EditWorkspace.vue'
 
 const sideCollapsed = ref(true)
 const elRef = ref()
-
-function onClickMenu() {
-  sideCollapsed.value = !sideCollapsed.value
-}
 
 const addWorkspaceShow = ref(false)
 function onClickAddWorkspace() {

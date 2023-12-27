@@ -1,6 +1,6 @@
 <template>
   <div class="index">
-    <NResult status="info" title="워크스페이스를 선택해주세요."></NResult>
+    <NResult status="info" :title="$t('selectWorkspace')"></NResult>
   </div>
 </template>
 
@@ -9,9 +9,10 @@ import { NResult } from 'naive-ui'
 import { useAuthStore } from '~/store/auth'
 
 const auth$ = useAuthStore()
+const localePath = useLocalePath()
 
 if (auth$.currentWorkspace) {
-  navigateTo('/b')
+  navigateTo(localePath('/b'))
 }
 </script>
 

@@ -1,7 +1,7 @@
 {
   "name": "s3-desktop",
   "description": "s3-desktop-app",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "private": true,
   "author": {
     "name": "icymonk",
@@ -19,11 +19,12 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "pack": "electron-builder --dir",
-    "dist": "electron-builder -m",
-    "deploy": "electron-builder -m -p always"
+    "dist": "electron-builder -m --x64",
+    "deploy": "electron-builder -m --x64 -p always"
   },
   "devDependencies": {
     "@nuxt/devtools": "latest",
+    "@nuxtjs/i18n": "8.0.0-rc.11",
     "@types/bytes": "^3.1.4",
     "electron": "^28.0.0",
     "electron-builder": "^24.9.1",

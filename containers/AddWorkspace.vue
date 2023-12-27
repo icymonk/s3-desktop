@@ -1,5 +1,5 @@
 <template>
-  <NCard title="Add Workspace" closable>
+  <NCard title="Add Workspace" closable @close="onClickCancel">
     <NForm
       ref="formRef"
       :model="form"

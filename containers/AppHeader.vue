@@ -1,14 +1,6 @@
 <template>
   <NSpace class="app-header" justify="space-between" align="center">
     <NSpace>
-      <!-- <NButton text circle @click="onClickMenu">
-        <template #icon>
-          <NIcon>
-            <ArrowBackOutline></ArrowBackOutline>
-          </NIcon>
-        </template>
-      </NButton> -->
-
       <NBreadcrumb>
         <NBreadcrumbItem @click="onClickHome">
           <NDropdown
@@ -41,17 +33,42 @@
         </NBreadcrumbItem>
 
         <NBreadcrumbItem v-for="(item, index) in breadcrumbItems">
-          <NButton text @click="onClickBreadcrumb(item, index)">
+          <NButton
+            :type="breadcrumbItems.length === index + 1 ? 'default' : 'info'"
+            text
+            @click="onClickBreadcrumb(item, index)"
+          >
             {{ item }}
           </NButton>
         </NBreadcrumbItem>
       </NBreadcrumb>
     </NSpace>
+
+    <DevOnly>
+      <div class="app-header__address">
+        <NInput :value="$route.path" readonly></NInput>
+      </div>
+    </DevOnly>
+
+    <NDropdown
+      :options="localeOptions"
+      size="small"
+      trigger="hover"
+      @select="onSelectLocale"
+    >
+      <NButton text circle>
+        <template #icon>
+          <NIcon>
+            <EarthOutline></EarthOutline>
+          </NIcon>
+        </template>
+      </NButton>
+    </NDropdown>
   </NSpace>
 </template>
 
 <script lang="ts" setup>
-import { MenuOutline, ArrowBack, SettingsOutline } from '@vicons/ionicons5'
+import { EarthOutline } from '@vicons/ionicons5'
 import {
   NButton,
   NSpace,
@@ -59,11 +76,10 @@ import {
   NBreadcrumbItem,
   NDropdown,
   NIcon,
+  NInput,
 } from 'naive-ui'
 import { useAuthStore } from '~/store/auth'
 import { useS3Store } from '~/store/s3'
-
-const emit = defineEmits(['click:menu'])
 
 const route = useRoute()
 
@@ -77,44 +93,63 @@ const workspaceItems = computed(() =>
 const bucketItems = computed(() =>
   s3$.buckets.map((item) => ({ label: item.Name, key: item.Name })),
 )
-const breadcrumbItems = computed(() => route.path.split('/').slice(3))
+const breadcrumbItems = computed(() =>
+  route.path.split('/b/')[1]?.split('/').slice(1),
+)
 
-function onClickMenu() {
-  console.log('onClickMenu')
-  emit('click:menu')
+const localePath = useLocalePath()
+const { locale, locales, setLocale, t } = useI18n()
+
+const localeOptions = computed<any[]>(() =>
+  locales.value.map((item) => ({
+    label: t(item.toString()),
+    key: item,
+    disabled: item === locale.value,
+  })),
+)
+
+function onSelectLocale(locale: any) {
+  console.log('onSelectLocale', locale)
+
+  setLocale(locale)
 }
 
 function onClickHome() {
-  navigateTo('/')
+  navigateTo(localePath('/'))
 }
 
 function onSelectBucket(bucket: any) {
   console.log('onSelectBucket')
 
-  navigateTo(`/b/${bucket}`)
+  navigateTo(localePath(`/b/${bucket}`))
 }
 
 function onSelectWorkspace(workspace: any) {
   console.log('onSelectWorkspace!', workspace)
 
   auth$.currentKey = workspace
-  navigateTo(`/b`)
+  navigateTo(localePath(`/b`))
 }
 
 function onClickBreadcrumb(item: any, index: number) {
   if (breadcrumbItems.value.length === index + 1) return
 
   console.log('onClickBreadcrumb', item)
-  const _path = route.path.split('/')
-  const path = ['', 'b', ..._path.slice(2 + index, _path.length - index - 1)]
+  const _path = route.path.split('/b/')[1]?.split('/') || []
+  const path = ['', 'b', ..._path.slice(index, _path.length - index - 1)]
   console.log(path.join('/'))
 
-  navigateTo(path.join('/'))
+  navigateTo(localePath(path.join('/')))
 }
 </script>
 
 <style lang="scss" scoped>
 .app-header {
   padding: 16px;
+}
+
+.app-header__address {
+  width: 100%;
+  flex: 1;
 }
 </style>

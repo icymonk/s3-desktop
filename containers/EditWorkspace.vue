@@ -123,7 +123,7 @@ function onClickCancel() {
 }
 
 function onClickSave() {
-  auth$.saveWorkspace(data.value)
+  auth$.workspaces = data.value
   emit('close')
   message.success('저장되었습니다.')
 }

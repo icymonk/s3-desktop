@@ -11,6 +11,12 @@ import {
   DeleteObjectCommand,
   type PutObjectCommandInput,
   PutObjectCommand,
+  type CreateBucketCommandInput,
+  CreateBucketCommand,
+  type DeleteBucketCommandInput,
+  DeleteBucketCommand,
+  DeleteObjectsCommand,
+  type DeleteObjectsCommandInput,
 } from '@aws-sdk/client-s3'
 import {
   CloudFrontClient,
@@ -35,13 +41,27 @@ export function getCfClient(cfConfig: CloudFrontClientConfig) {
 export async function getBuckets(s3Client: S3Client) {
   const command = new ListBucketsCommand({})
 
-  try {
-    const { Buckets } = await s3Client.send(command)
+  const { Buckets } = await s3Client.send(command)
 
-    return Buckets
-  } catch (err) {
-    console.error(err)
-  }
+  return Buckets
+}
+
+export async function createBucket(
+  s3Client: S3Client,
+  input: CreateBucketCommandInput,
+) {
+  const command = new CreateBucketCommand(input)
+
+  return s3Client.send(command)
+}
+
+export async function deleteBucket(
+  s3Client: S3Client,
+  input: DeleteBucketCommandInput,
+) {
+  const command = new DeleteBucketCommand(input)
+
+  return s3Client.send(command)
 }
 
 export async function getListObjects(
@@ -52,37 +72,33 @@ export async function getListObjects(
 
   const result = []
 
-  try {
-    let isTruncated = true
+  let isTruncated = true
 
-    while (isTruncated) {
-      const { Contents, IsTruncated, NextContinuationToken, CommonPrefixes } =
-        await s3Client.send(command)
+  while (isTruncated) {
+    const { Contents, IsTruncated, NextContinuationToken, CommonPrefixes } =
+      await s3Client.send(command)
 
-      isTruncated = !!IsTruncated
-      console.log('Contents', {
-        input,
-        Contents,
-        CommonPrefixes,
-      })
+    isTruncated = !!IsTruncated
+    console.log('Contents', {
+      input,
+      Contents,
+      CommonPrefixes,
+    })
 
-      if (Contents) result.push(...Contents)
-      if (CommonPrefixes)
-        result.push(
-          ...CommonPrefixes.map((item) => ({
-            ...item,
-            Key: item.Prefix,
-            isDirectory: true,
-          })),
-        )
+    if (Contents) result.push(...Contents)
+    if (CommonPrefixes)
+      result.push(
+        ...CommonPrefixes.map((item) => ({
+          ...item,
+          Key: item.Prefix,
+          isDirectory: true,
+        })),
+      )
 
-      command.input.ContinuationToken = NextContinuationToken
-    }
-
-    return result
-  } catch (err) {
-    console.error(err)
+    command.input.ContinuationToken = NextContinuationToken
   }
+
+  return result
 }
 
 export async function putObject(
@@ -91,12 +107,7 @@ export async function putObject(
 ) {
   const command = new PutObjectCommand(input)
 
-  try {
-    const response = await s3Client.send(command)
-    return response
-  } catch (err) {
-    console.error(err)
-  }
+  return s3Client.send(command)
 }
 
 export async function getObject(
@@ -105,22 +116,18 @@ export async function getObject(
 ) {
   const command = new GetObjectCommand(input)
 
-  try {
-    const response = await s3Client.send(command)
-    const byteArray = await response.Body!.transformToByteArray()
-    const blob = new Blob([byteArray], { type: 'application/octet-stream' })
+  const response = await s3Client.send(command)
+  const byteArray = await response.Body!.transformToByteArray()
+  const blob = new Blob([byteArray], { type: 'application/octet-stream' })
 
-    const anchor = document.createElement('a')
-    anchor.href = URL.createObjectURL(blob)
-    anchor.download = input.Key?.toString() || ''
-    document.body.append(anchor)
-    anchor.click()
+  const anchor = document.createElement('a')
+  anchor.href = URL.createObjectURL(blob)
+  anchor.download = input.Key?.toString() || ''
+  document.body.append(anchor)
+  anchor.click()
 
-    document.body.removeChild(anchor)
-    console.log(blob)
-  } catch (err) {
-    console.error(err)
-  }
+  document.body.removeChild(anchor)
+  console.log(blob)
 }
 
 export async function deleteObject(
@@ -129,10 +136,44 @@ export async function deleteObject(
 ) {
   const command = new DeleteObjectCommand(input)
 
-  try {
-    const response = await s3Client.send(command)
-    return response
-  } catch (err) {
-    console.error(err)
+  return s3Client.send(command)
+}
+
+export async function deleteObjects(
+  s3Client: S3Client,
+  input: Partial<DeleteObjectsCommandInput & ListObjectsV2CommandInput>,
+) {
+  async function recursiveDelete(token?: any) {
+    const listCommand = new ListObjectsV2Command({
+      Bucket: input.Bucket,
+      Prefix: input.Prefix,
+      ContinuationToken: token,
+    })
+    let list = await s3Client.send(listCommand)
+
+    console.log('list', list)
+
+    if (list.KeyCount) {
+      const deleteCommand = new DeleteObjectsCommand({
+        Bucket: input.Bucket,
+        Delete: {
+          Objects: list.Contents!.map((item) => ({ Key: item.Key })),
+          Quiet: false,
+        },
+      })
+      let deleted = await s3Client.send(deleteCommand)
+
+      if (deleted.Errors) {
+        deleted.Errors.map((error) =>
+          console.log(`${error.Key} could not be deleted - ${error.Code}`),
+        )
+      }
+    }
+
+    if (list.NextContinuationToken) {
+      return recursiveDelete(list.NextContinuationToken)
+    }
   }
+
+  return recursiveDelete()
 }

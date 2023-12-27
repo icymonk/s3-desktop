@@ -15,12 +15,9 @@ import { useS3Store } from './store/s3'
 
 const auth$ = useAuthStore()
 const s3$ = useS3Store()
-
-await auth$.loadWorkspace()
-// await auth$.saveWorkspace()
+const pinia = usePinia()
 
 await s3$.initWorkspace(auth$.currentWorkspace)
-const pinia = usePinia()
 
 watch(
   pinia.state,
