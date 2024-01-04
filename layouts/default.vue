@@ -15,7 +15,7 @@
       ></AppSidebar>
     </NLayoutSider>
 
-    <NLayout>
+    <NLayout class="main">
       <NLayoutHeader>
         <AppHeader :elRef="elRef"></AppHeader>
       </NLayoutHeader>
@@ -71,3 +71,9 @@ function onCloseEditWorkspace() {
   editWorkspaceShow.value = false
 }
 </script>
+
+<style lang="scss" scoped>
+.main {
+  min-height: 100vh;
+}
+</style>

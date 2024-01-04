@@ -16,8 +16,8 @@ const auth$ = useAuthStore()
 const localePath = useLocalePath()
 const { t } = useI18n()
 
-function renderIcon(icon: Component) {
-  return () => h(NIcon, null, { default: () => h(icon) })
+function renderIcon(icon: Component, attrs?: any) {
+  return () => h(NIcon, attrs, { default: () => h(icon) })
 }
 
 const defaultIcon = renderIcon(icons.Earth)
@@ -29,7 +29,14 @@ const menuOptions = computed<MenuOption[]>(() => [
     icon: renderIcon(icons[item.icon as keyof typeof icons] || defaultIcon),
   })),
   { key: 'divider-1', type: 'divider' },
-  { label: t('add'), key: 'add', icon: renderIcon(icons.AddOutline) },
+  {
+    label: t('add'),
+    key: 'add',
+    icon: renderIcon(icons.AddOutline, {
+      'data-step': '1',
+      'data-intro': `${t('intro.addWorkspace')}`,
+    }),
+  },
   {
     label: t('setting'),
     key: 'setting',

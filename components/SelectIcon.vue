@@ -40,6 +40,7 @@
 <script lang="ts" setup>
 import * as icons from '@vicons/ionicons5'
 import { NInput, NTooltip, NPopover, NCard, NButton } from 'naive-ui'
+import type { CSSProperties } from 'vue'
 import { ICON_NAMES } from '~/configs/icon'
 
 export type SelectIconProps = {
@@ -66,10 +67,11 @@ const cardStyle = computed(() => ({
   overflow: 'auto',
 }))
 
-const contentStyle = computed<any>(() => ({
+const contentStyle = computed<CSSProperties>(() => ({
   display: 'flex',
   flexWrap: 'wrap',
   gap: '4px',
+  flex: 'unset',
   height: props.height + 'px',
   overflow: 'auto',
 }))

@@ -1,7 +1,7 @@
 <template>
   <NSpace class="app-header" justify="space-between" align="center">
     <NSpace>
-      <NBreadcrumb>
+      <NBreadcrumb separator=">">
         <NBreadcrumbItem @click="onClickHome">
           <NDropdown
             :options="workspaceItems.length > 1 ? workspaceItems : []"

@@ -5,7 +5,11 @@ export default defineI18nConfig(() => ({
   messages: {
     en: {
       en: 'English',
-      ko: 'Korean',
+      ko: '한국어',
+
+      intro: {
+        addWorkspace: 'Please add workspace',
+      },
 
       selectWorkspace: 'Please select workspace.',
 
@@ -71,8 +75,12 @@ export default defineI18nConfig(() => ({
       },
     },
     ko: {
-      en: '영어',
+      en: 'English',
       ko: '한국어',
+
+      intro: {
+        addWorkspace: '워크스페이스를 추가해주세요.',
+      },
 
       selectWorkspace: '워크스페이스를 선택해주세요.',
 

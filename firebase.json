@@ -1,0 +1,7 @@
+{
+  "hosting": {
+    "site": "s3-desktop",
+    "public": "docs/.vitepress/dist",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"]
+  }
+}
